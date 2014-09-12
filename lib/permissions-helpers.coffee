@@ -1,4 +1,4 @@
-share.helpers =
+helpers = share.helpers =
   dashToWhiteSpace: (s) -> s.replace /-/g, " "
 
   isDashSeparated: (s) -> not /^[a-z\-]$/.test s

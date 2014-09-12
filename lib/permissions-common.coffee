@@ -11,7 +11,7 @@ OrbitPermissions = share.OrbitPermissions =
 
   defineProjectRole: (role_name, permissions, description) ->
     if not Meteor.isServer or @.throwIfUserCant("edit-project-roles", "permissions")
-      if not Roles.["project"]?.role_name?
+      if not Roles["project"]?.role_name?
         @.project_roles.insert({_id: role_name, permissions: permissions, description: {}})
       else
         throw new Meteor.Error 400, "Project role `#{role_name}' is already defined"
@@ -79,24 +79,24 @@ OrbitPermissions = share.OrbitPermissions =
 
     user_roles
 
-  userCan: (permission, package, user) ->
+  userCan: (permission, package_name, user) ->
     # On the client userCan is a reactive resource that depends on @._getUserRoles
 
-    package = helpers.sterilizePackageName(package)
+    package_name = helpers.sterilizePackageName(package_name)
 
     for role in @._getUserRoles(user)
       if role == globals.admin_role
         return true
 
-      [package, role] = role.split(":")
+      [role_package, role_name] = role.split(":")
 
-      if permission in Roles[package]?[role].permissions
+      if permission in Roles[role_package]?[role_name].permissions
         return true
 
     return false
 
-  throwIfUserCant: (permission, package, user) ->
-    if not @.userCan(permission, package, user)
+  throwIfUserCant: (permission, package_name, user) ->
+    if not @.userCan(permission, package_name, user)
       throw new Meteor.Error 401, "Insufficient permissions"
 
     return true
@@ -154,7 +154,7 @@ OrbitPermissions.Registrar = (package_name="project") ->
         return @
 
     package_permissions[permission_name] = \
-      sterilizeInputDescription description, permission_name
+      helpers.sterilizeInputDescription description, permission_name
 
     permissionsDep.changed()
 
@@ -198,7 +198,7 @@ OrbitPermissions.Registrar = (package_name="project") ->
       ), []
 
     package_roles[role_name] = 
-      description: sterilizeInputDescription description, role_name
+      description: helpers.sterilizeInputDescription description, role_name
       permissions: permissions
 
     rolesDep.changed()

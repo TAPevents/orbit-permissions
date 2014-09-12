@@ -10,8 +10,9 @@ server = 'server';
 client = 'client';
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@0.9.1');
+  api.versionsFrom('METEOR@0.9.1.1');
 
+  api.use('tracker', both);
   api.use('coffeescript', both);
   api.use('underscore', both);
 
