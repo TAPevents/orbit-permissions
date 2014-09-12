@@ -10,17 +10,22 @@ server = 'server';
 client = 'client';
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@0.9.0.1');
+  api.versionsFrom('METEOR@0.9.1');
 
   api.use('coffeescript', both);
   api.use('underscore', both);
 
-  api.addFiles('lib/permissions.coffee', both);
-  api.addFiles('lib/permissions-registrar.coffee', both);
+  api.use('tap:i18n', both, {weak: true});
+
+  api.addFiles('lib/globals.js', both);
+  api.addFiles('lib/permissions-helpers.coffee', both);
+  api.addFiles('lib/permissions-common.coffee', both);
+  api.addFiles('lib/permissions-client.coffee', client);
+  api.addFiles('lib/permissions-server.coffee', server);
 });
 
 Package.onTest(function(api) {
-  api.versionsFrom('METEOR@0.9.0.1');
+  api.versionsFrom('METEOR@0.9.1');
 
   api.use('tinytest');
   api.use('orbit:permissions');

@@ -62,3 +62,7 @@ be defined by the project manager.
     Edit
 {{/if}}
 ```
+
+## Testing
+
+    $ meteor test-packages ./
