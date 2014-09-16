@@ -101,18 +101,48 @@ OrbitPermissions = share.OrbitPermissions =
 
     return true
 
-  getPermissions: () ->
-    # Returns available permissions in a data structure that can't affect
-    # the Permissions object
+  _loopPermissions: (cb) ->
+    # cb will be called with (package_name, permission_name, permission_description)
+    # permission_description is the reference to the object, hence must not be
+    # changed.
+
+    if not _.isFunction cb
+      return
 
     if Meteor.isClient
       # Reactive resource only on the client
       permissionsDep.depend()
 
-    permissions = []
     for package_name of Permissions
       for permission of Permissions[package_name]
-        permissions.push "#{package_name}:#{permission}"
+        cb(package_name, permission, Permissions[package_name][permission])
+
+  _loopRoles: (cb) ->
+    # cb will be called with (package_name, role_name, role_permissions, role_description)
+    # role_description is the reference to the object, hence must not be
+    # changed.
+
+    if not _.isFunction cb
+      return
+
+    if Meteor.isClient
+      # Reactive resource only on the client
+      rolesDep.depend()
+
+    for package_name of Roles
+      for role_name of Roles[package_name]
+        role_data = Roles[package_name][role_name]
+
+        permissions = role_data.permissions.slice() # protect the permissions array
+        cb(package_name, role_name, permissions, role_data.description)
+
+  getPermissions: () ->
+    # Returns available permissions in a data structure that can't affect
+    # the Permissions object
+
+    permissions = []
+    @._loopPermissions (package_name, permission_name, permission_description) ->
+      permissions.push "#{package_name}:#{permission_name}"
 
     permissions
 
@@ -120,14 +150,9 @@ OrbitPermissions = share.OrbitPermissions =
     # Returns available roles and their permissions in a data structure that
     # can't affect the Roles object
 
-    if Meteor.isClient
-      # Reactive resource only on the client
-      rolesDep.depend()
-
     roles = {}
-    for package_name of Roles
-      for role_name of Roles[package_name]
-        roles["#{package_name}:#{role_name}"] = Roles[package_name][role_name].permissions.slice()
+    @._loopRoles (package_name, role_name, role_permissions, role_description) ->
+      roles["#{package_name}:#{role_name}"] = role_permissions
 
     roles
 
@@ -140,8 +165,13 @@ OrbitPermissions = share.OrbitPermissions =
 OrbitPermissions.Registrar = (package_name="project") ->
   package_name = helpers.sterilizePackageName(package_name)
 
-  package_permissions = Permissions[package_name] = {}
-  package_roles = Roles[package_name] = {}
+  if not Permissions[package_name]
+    Permissions[package_name] = {}
+  package_permissions = Permissions[package_name]
+
+  if not Roles[package_name]
+    Roles[package_name] = {}
+  package_roles = Roles[package_name]
 
   @.definePermission = (permission_name, description) ->
     if not helpers.isDashSeparated(permission_name)
@@ -160,36 +190,34 @@ OrbitPermissions.Registrar = (package_name="project") ->
 
     return @
 
-  @.defineRole = (role_name, options={}) ->
+  @.defineRole = (role_name, permissions=null, description) ->
     if not helpers.isDashSeparated(role_name)
       throw new Meteor.Error 403, "Role name should be all lowercase dash-separated"
 
-    if not options?
-      throw new Meteor.Error 403, "Missing argument: options"
-
-    permissions = options.permissions
-    description = options.description
-
+    # update existing role descripition
     if role_name of package_roles
       if permissions?
         throw new Meteor.Error 403, "For security reasons package role's permissions can't be changed."
 
       if _.isObject description
-        description = _.extend {}, package_roles[permission_name].description, options.description
+        package_roles[role_name].description =
+          _.extend {}, package_roles[role_name].description, description
+
+        rolesDep.changed()
 
       return @
 
     if not _.isArray permissions
-      throw new Meteor.Error 403, "permissions should be an array"
+      throw new Meteor.Error 403, "When defining a new role, permissions must be an array"
 
     # Create a new instance of the permissions array that the caller has no reference to
     permissions = permissions.slice()
-
     permissions = _.reduce permissions, (
+        # Note: we don't check for permission existence, might change in the future
         (memo, permission) ->
-          if ":" in permission
+          if helpers.isValidOrbitPermissionsSymbol permission
             memo.push permission
-          else if permission of package_permissions
+          else if helpers.isDashSeparated permission
             memo.push "#{package_name}:#{permission}"
           else
             throw new Meteor.Error 403, "OrbitPermissions.defineRole called with an invalid permission: `#{permission}'. Permissions should be prefixed with their package name or be part of the current package."
@@ -210,5 +238,5 @@ OrbitPermissions.Registrar = (package_name="project") ->
 (new OrbitPermissions.Registrar("permissions"))
   .definePermission "edit-project-roles"
   .definePermission "delegate-and-revoke"
-  .defineRole "permissions-manager", {permissions: ["edit-project-roles", "delegate-and-revoke"]}
-  .defineRole "admin", {permissions: []} # This is a special role, users that will have it will have all the permission in the system
+  .defineRole "permissions-manager", ["edit-project-roles", "delegate-and-revoke"]
+  .defineRole "admin", [] # This is a special role, users that will have it will have all the permission in the system

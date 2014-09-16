@@ -1,22 +1,26 @@
 helpers = share.helpers =
   dashToWhiteSpace: (s) -> s.replace /-/g, " "
 
-  isDashSeparated: (s) -> not /^[a-z\-]$/.test s
+  isDashSeparated: (s) -> /^[a-z0-9][a-z0-9\-]*$/.test s
 
   sterilizePackageName: (name) ->
     # to allow forks we ignore the package owner part of the package name
     name.replace /^.+:/, ""
 
   sterilizeInputDescription: (input_description, symbol_name) ->
-    default_description = {en: {name: helpers.dashToWhiteSpace symbol_name}}
+    default_description = {}
+
+    fb_lang = globals.fallback_language
+
+    default_description[fb_lang] =
+      name: helpers.ucfirst helpers.dashToWhiteSpace(symbol_name)
 
     if not _.isObject input_description
       description = default_description
-    else if not input_description.en?
-      description = _.extend {}, input_description, default_description.en
-    else if not input_description.en.name?
-      en = _.extend {}, input_description.en, default_description.en
-      description = _.extend {}, input_description, default_description.en
+    else if not input_description[fb_lang]?
+      description = _.extend {}, input_description, default_description
+    else
+      description = input_description
 
     description
 
@@ -50,7 +54,7 @@ helpers = share.helpers =
       ), []
 
   isValidOrbitPermissionsSymbol: (role) ->
-    /([a-z\-]+):([a-z\-]+)/.test(role)
+    /^[a-z0-9][a-z0-9\-]*:[a-z0-9][a-z0-9\-]*$/.test(role)
 
   verifyRolesArray: (roles) ->
     for role in roles
@@ -62,3 +66,22 @@ helpers = share.helpers =
       roles = [roles]
 
     roles
+
+  getFallbackLanguage: () -> globals.fallback_language
+
+  getLanguage: () ->
+    language = @.getFallbackLanguage()
+
+    if Meteor.isServer
+      return language
+
+    if Package["tap:i18n"]
+      tap_lang = Package["tap:i18n"].TAPi18n.getLanguage()
+
+      if tap_lang
+        language = tap_lang
+
+    language
+
+  ucfirst: (string) ->
+    string.charAt(0).toUpperCase() + string.slice(1);
