@@ -1,3 +1,4 @@
 OrbitPermissions = share.OrbitPermissions
 
-UI.registerHelper globals.helper_name, OrbitPermissions.can
+if Package.ui
+  Package.ui.UI.registerHelper globals.helper_name, OrbitPermissions.can

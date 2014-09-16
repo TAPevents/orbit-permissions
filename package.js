@@ -15,6 +15,7 @@ Package.onUse(function(api) {
   api.use('tracker', both);
   api.use('coffeescript', both);
   api.use('underscore', both);
+  api.use('ui', client, {weak: true});
 
   api.use('tap:i18n', both, {weak: true});
 
