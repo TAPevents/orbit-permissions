@@ -24,6 +24,8 @@ Package.onUse(function(api) {
   api.addFiles('lib/permissions-common.coffee', both);
   api.addFiles('lib/permissions-client.coffee', client);
   api.addFiles('lib/permissions-server.coffee', server);
+
+  api.export('OrbitPermissions');
 });
 
 Package.onTest(function(api) {
