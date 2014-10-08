@@ -4,6 +4,9 @@ helpers = share.helpers =
   isDashSeparated: (s) -> /^[a-z0-9][a-z0-9\-]*$/.test s
 
   sterilizePackageName: (name) ->
+    if not _.isString name
+      name = ""
+
     # to allow forks we ignore the package owner part of the package name
     name.replace /^.+:/, ""
 
@@ -25,10 +28,11 @@ helpers = share.helpers =
     description
 
   getUserObject: (user) ->
+    # Returns undefined for invalid input (not an id or user object) or if user doesn't exist
     if _.isString user
-      return Meteor.users.find({_id: user});
+      return Meteor.users.findOne({_id: user})
     else if _.isObject user
-      return user
+      return Meteor.users.findOne({_id: user._id})
     else
       return undefined
 
@@ -42,7 +46,7 @@ helpers = share.helpers =
       return undefined
 
   sterilizeUsersArray: (users) ->
-    if _.isString users
+    if not _.isArray users
       users = [users]
 
     return _.reduce users, (
@@ -60,6 +64,8 @@ helpers = share.helpers =
     for role in roles
       if not @.isValidOrbitPermissionsSymbol role
         throw new Meteor.Error 403, "Invalid role name: `#{role}'"
+
+    roles
 
   sterilizeRolesArray: (roles) ->
     if _.isString roles

@@ -3,24 +3,71 @@ helpers = share.helpers
 Permissions = {}
 permissionsDep = new Tracker.Dependency
 
-Roles =  {}
+Roles = {}
 rolesDep = new Tracker.Dependency
 
 OrbitPermissions = share.OrbitPermissions =
-  project_roles: new Meteor.Collection globals.project_roles_collection_name
+  custom_roles: new Meteor.Collection globals.custom_roles_collection_name
 
-  defineProjectRole: (role_name, permissions, description) ->
-    if not Meteor.isServer or @.throwIfUserCant("edit-project-roles", "permissions")
-      if not Roles["project"]?.role_name?
-        @.project_roles.insert({_id: role_name, permissions: permissions, description: {}})
+  _reloadCustomRoles: () ->
+    custom_roles = {}
+
+    _.each OrbitPermissions.custom_roles.find({}).fetch(), (role) ->
+      custom_roles[role._id] = {
+        description: role.description
+        permissions: role.permissions        
+      }
+
+    Roles["project-custom"] = custom_roles
+
+    rolesDep.changed()
+
+    return @
+
+  defineCustomRole: (role_name, permissions, description={}, callback) ->
+    if not helpers.isDashSeparated(role_name)
+      throw new Meteor.Error 403, "Role name should be all lowercase dash-separated"
+
+    description = helpers.sterilizeInputDescription description, role_name
+    if Meteor.isServer or @.throwIfUserCant("edit-custom-roles", "permissions")
+      if not Roles["project-custom"][role_name]?
+        role = {_id: role_name, permissions: permissions, description: description}
+
+        # Latency compensation
+        Roles["project-custom"][role_name] = role
+        rolesDep.changed()
+
+        @.custom_roles.insert role, (err, _id) ->
+          if err?
+            delete Roles["project-custom"][role_name]
+            rolesDep.changed()
+
+          callback(err, _id)
       else
         throw new Meteor.Error 400, "Project role `#{role_name}' is already defined"
 
-  undefineProjectRole: (role_name) ->
-    if not Meteor.isServer or @.throwIfUserCant("edit-project-roles", "permissions")
-      @.project_roles.remove(role_name)
+    return @
 
-  _modifyUsersRoles: (op, users, roles) ->
+  undefineCustomRole: (role_name, callback) ->
+    if not helpers.isDashSeparated(role_name)
+      throw new Meteor.Error 403, "Role name should be all lowercase dash-separated"
+
+    # Latency compensation
+    role = Roles["project-custom"][role_name]
+    delete Roles["project-custom"][role_name]
+    rolesDep.changed()
+
+    if Meteor.isServer or @.throwIfUserCant("edit-custom-roles", "permissions")
+      @.custom_roles.remove role_name, (err) ->
+        if err?
+          Roles["project-custom"][role_name] = role
+          rolesDep.changed()
+
+        callback(err)
+
+    return @
+
+  _modifyUsersRoles: (op, users, roles, callback) ->
     if op not in ["delegate", "revoke"]
       throw new Meteor.Error 403, "Unknow operation"
 
@@ -33,7 +80,7 @@ OrbitPermissions = share.OrbitPermissions =
     users = helpers.sterilizeUsersArray(users)
     roles = helpers.verifyRolesArray(helpers.sterilizeRolesArray(roles))
 
-    if not Meteor.isServer or @.throwIfUserCant("delegate-and-revoke", "permissions")
+    if Meteor.isServer or @.throwIfUserCant("delegate-and-revoke", "permissions")
       # If delegate is being called on the server, no permission is required
       if op == "delegate"
         update = {$addToSet: {}}
@@ -44,34 +91,41 @@ OrbitPermissions = share.OrbitPermissions =
 
       if Meteor.isClient
         # Iterate over each user to fulfill Meteor's 'one update per ID' policy
-        _.each users, (user) ->
-          Meteor.users.update {_id: user}, update
+        async.each users, ((user, callback) ->
+          Meteor.users.update {_id: user}, update, callback), callback
       else
         # On the server we can leverage MongoDB's $in operator for performance
-        Meteor.users.update({_id:{$in:users}}, update, {multi: true})
+        Meteor.users.update {_id:{$in:users}}, update, {multi: true}, callback
 
-  delegate: (users, roles) ->
-    @._modifyUsersRoles "delegate", users, roles
+    return @
 
-  revoke: (users, roles) ->
-    @._modifyUsersRoles "revoke", users, roles
+  delegate: (users, roles, callback) ->
+    @._modifyUsersRoles "delegate", users, roles, callback
 
-  _getUserRoles: (user) ->
-    # On the client userCan is a reactive resource that depends on Meteor.user()
-    # and rolesDep
+  revoke: (users, roles, callback) ->
+    @._modifyUsersRoles "revoke", users, roles, callback
 
-    # on the client userCan is always for the current user
+  getUserRoles: (user) ->
+    # Returns an empty array if user doesn't exist
+
+    # On the client getUserRoles is a reactive resource that depends on Meteor.user()
+
     if Meteor.isClient
       if user?
-        throw new Meteor.Error 401, "Can't query permissions of other users"
-      user = Meteor.user()
+        if not @.userCan("get-users-roles", "permissions")
+          # On the client getUserRoles is always for the current user, unless
+          # current user has the get-users-roles permission
+          throw new Meteor.Error 401, "Can't query permissions of other users"
+      else
+        user = Meteor.user()
 
-      rolesDep.depend()
+    if not user? # if null or undefined
+      return []
 
     user = helpers.getUserObject user
 
-    if not user?
-      return false
+    if not user? # if user doesn't exist
+      return []
 
     user_roles = user[globals.roles_field_name]
     if not _.isArray user_roles
@@ -80,18 +134,30 @@ OrbitPermissions = share.OrbitPermissions =
     user_roles
 
   userCan: (permission, package_name, user) ->
-    # On the client userCan is a reactive resource that depends on @._getUserRoles
+    # On the client userCan is a reactive resource that depends on @.getUserRoles
+    # and rolesDep
+
+    # on the client userCan is always for the current user
+
+    # it's a common pitfall to forget to specify the package_name
+    if not package_name?
+      message = "OrbitPermissions.UserCan(): You must specify package_name"
+      console.log "Error: #{message}"
+      throw new Meteor.Error 401, message
+
+    rolesDep.depend()
 
     package_name = helpers.sterilizePackageName(package_name)
 
-    for role in @._getUserRoles(user)
+    for role in @.getUserRoles(user)
       if role == globals.admin_role
         return true
 
       [role_package, role_name] = role.split(":")
 
-      if permission in Roles[role_package]?[role_name].permissions
-        return true
+      if Roles[role_package]?[role_name]?
+        if "#{package_name}:#{permission}" in Roles[role_package][role_name].permissions
+          return true
 
     return false
 
@@ -156,11 +222,11 @@ OrbitPermissions = share.OrbitPermissions =
 
     roles
 
-  isAdmin: (user) -> globals.admin_role of @._getUserRoles(user)
+  isAdmin: (user) -> globals.admin_role in @.getUserRoles(user)
 
-  addAdmins: (users) -> @.delegate(users, globals.admin_role)
+  addAdmins: (users, callback) -> @.delegate(users, globals.admin_role, callback)
 
-  removeAdmins: (users) -> @.revoke(users, globals.admin_role)
+  removeAdmins: (users, callback) -> @.revoke(users, globals.admin_role, callback)
 
 OrbitPermissions.Registrar = (package_name="project") ->
   package_name = helpers.sterilizePackageName(package_name)
@@ -235,8 +301,18 @@ OrbitPermissions.Registrar = (package_name="project") ->
 
   return @
 
+OrbitPermissions._reloadCustomRoles()
+
+# Keep track of changes to custom roles
+OrbitPermissions.custom_roles.find({}).observe {
+  added: (-> OrbitPermissions._reloadCustomRoles()),
+  changed: (-> OrbitPermissions._reloadCustomRoles()),
+  removed: (-> OrbitPermissions._reloadCustomRoles())
+}
+
 (new OrbitPermissions.Registrar("permissions"))
-  .definePermission "edit-project-roles"
+  .definePermission "edit-custom-roles"
+  .definePermission "get-users-roles"
   .definePermission "delegate-and-revoke"
-  .defineRole "permissions-manager", ["edit-project-roles", "delegate-and-revoke"]
+  .defineRole "permissions-manager", ["edit-custom-roles", "get-users-roles", "delegate-and-revoke"]
   .defineRole "admin", [] # This is a special role, users that will have it will have all the permission in the system

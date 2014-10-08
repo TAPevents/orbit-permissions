@@ -10,7 +10,7 @@ server = 'server';
 client = 'client';
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@0.9.1.1');
+  api.versionsFrom('METEOR@0.9.3');
 
   api.use('tracker', both);
   api.use('coffeescript', both);
@@ -34,16 +34,31 @@ Package.onTest(function(api) {
 
   api.use('coffeescript', both);
   api.use('tinytest');
+  api.use('accounts-password');
   api.use('orbit:permissions');
-  api.use('tap:i18n@1.0.2');
+  api.use('tap:i18n@1.0.7');
 
   api.addFiles('test/project-tap.i18n', both);
 
   api.addFiles('test/lib/async.js', client);
 
+  api.addFiles('test/both/globals.coffee', both);
   api.addFiles('test/both/helpers.coffee', both);
-  api.addFiles('test/both/permissions.coffee', both);
-  api.addFiles('test/both/permissions-registrar.coffee', both);
 
+  api.addFiles('test/server/setup.coffee', server);
+
+  api.addFiles('test/both/package-permissions.coffee', both);
+
+  api.addFiles('test/both/permissions.coffee', both);
+
+  api.addFiles('test/both/permissions-registrar.coffee', both);
   api.addFiles('test/client/permissions-registrar.coffee', client);
+
+  api.addFiles('test/server/permissions-delegate-revoke-check.coffee', server);
+  api.addFiles('test/client/permissions-delegate-revoke-check.coffee', client);
+
+  api.addFiles('test/server/custom-roles.coffee', server);
+  api.addFiles('test/client/custom-roles.coffee', client);
+
+  api.export('OrbitPermissions');
 });

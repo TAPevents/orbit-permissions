@@ -11,5 +11,7 @@ helpers = share.helpers =
 
     return a
 
-  ucfirst: (string) ->
-    string.charAt(0).toUpperCase() + string.slice(1);
+  ucfirst: (string) -> string.charAt(0).toUpperCase() + string.slice(1)
+
+  emailAddressToUserObject: (email) -> Meteor.users.findOne({"emails.address": email})
+  emailAddressToUserId: (email) -> helpers.emailAddressToUserObject(email)._id
