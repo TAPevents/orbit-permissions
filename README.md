@@ -5,7 +5,7 @@ by packages and apps, gathering these permissions into *roles*, and assigning th
 roles to users.
 
 *Permissions* are defined by the app or by packages, which use them to define access
-restrictions. These permissions are gathered into *roles*. orbit:permissions has two
+restrictions. These permissions are gathered into *roles*. The orbit:permissions there are two
 two types of roles: *package roles* that are defined in the code level, and *custom roles*
 that are defined in the database level.
 
@@ -21,34 +21,40 @@ that are defined in the database level.
 
 ### Permissions
 
+The orbit:permissions package defines the following permissions:
+
 * **permissions:delegate-and-revoke**: Needed in order to delegate and revoke user roles.
 * **permissions:get-users-roles**: Needed in order to query roles of other users.
 * **permissions:edit-custom-roles**: Needed in order to define and undefine custom roles.
 
+The permissions package defines the following package roles:
+
 ### Package Roles and their permissions
 
+The orbit:permissions package defines the following Package Roles:
+
 * **permissions:admin**:
-..* Users with this role will have all the permissions
+  * Users with this role will have all the permissions
 
 * **permissions:permissions-manager**:
-..* permissions:delegate-and-revoke
-..* permissions:get-users-roles
-..* permissions:edit-custom-roles
+  * permissions:delegate-and-revoke
+  * permissions:get-users-roles
+  * permissions:edit-custom-roles
 
 ## Getting Started
 
 Once you've installed orbit:permissions on your app you'll probably want to give to
-at least one of your users the permission to use it. You can do this in few ways:
+at least one of your users the permission to use it:
 
 By making the user an Admin:
 
 	// The admin role has all permissions in the system
-	OrbitPermissions.addAdmins(user_id);
+	OrbitPermissions.addAdmins(user); // user can be user_id or user object
 
 Or by giving the user the permissions-manager role:
 
-	// Allow all permissions related operations by this user
-	OrbitPermissions.delegate(user_id, "permissions:permissions-manager");
+	// Allow all permissions related operations to be performed by this user
+	OrbitPermissions.delegate(user, "permissions:permissions-manager"); // user can be user_id or user object
 
 ## API
 
