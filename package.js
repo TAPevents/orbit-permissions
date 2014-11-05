@@ -18,7 +18,7 @@ Package.onUse(function(api) {
   api.use('accounts-base', both);
   api.use('ui', client, {weak: true});
 
-  api.use('tap:i18n', both, {weak: true});
+  api.use('tap:i18n@1.0.7', both, {weak: true});
 
   api.addFiles('lib/globals.js', both);
   api.addFiles('lib/permissions-helpers.coffee', both);
