@@ -34,7 +34,7 @@ The permissions package defines the following package roles:
 The orbit:permissions package defines the following Package Roles:
 
 * **permissions:admin**:
-  * Users with this role will have all the permissions
+  * Users with this role will have all the permissions of all the packages
 
 * **permissions:permissions-manager**:
   * permissions:delegate-and-revoke
