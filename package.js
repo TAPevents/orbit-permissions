@@ -10,7 +10,7 @@ server = 'server';
 client = 'client';
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@0.9.3');
+  api.versionsFrom('METEOR@1.0');
 
   api.use('tracker', both);
   api.use('coffeescript', both);
@@ -30,7 +30,7 @@ Package.onUse(function(api) {
 });
 
 Package.onTest(function(api) {
-  api.versionsFrom('METEOR@0.9.1');
+  api.versionsFrom('METEOR@1.0');
 
   api.use('coffeescript', both);
   api.use('tinytest');
