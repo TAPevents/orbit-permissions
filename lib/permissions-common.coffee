@@ -15,7 +15,7 @@ OrbitPermissions = share.OrbitPermissions =
     _.each OrbitPermissions.custom_roles.find({}).fetch(), (role) ->
       custom_roles[role._id] = {
         description: role.description
-        permissions: role.permissions        
+        permissions: role.permissions
       }
 
     Roles["project-custom"] = custom_roles
