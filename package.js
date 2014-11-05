@@ -34,6 +34,7 @@ Package.onTest(function(api) {
 
   api.use('coffeescript', both);
   api.use('tinytest');
+  api.use('templating');
   api.use('accounts-password');
   api.use('orbit:permissions');
   api.use('tap:i18n@1.0.7');
@@ -59,6 +60,8 @@ Package.onTest(function(api) {
 
   api.addFiles('test/server/custom-roles.coffee', server);
   api.addFiles('test/client/custom-roles.coffee', client);
+
+  api.addFiles('test/templates/test-can-helper-templates.html', client);
 
   api.export('OrbitPermissions');
 });

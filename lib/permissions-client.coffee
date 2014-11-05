@@ -1,8 +1,9 @@
 OrbitPermissions = share.OrbitPermissions
 helpers = share.helpers
 
-if Package.ui
-  Package.ui.UI.registerHelper globals.helper_name, OrbitPermissions.can
+if Package.templating
+  Package.templating.Template.registerHelper globals.helper_name, (permission, package_name) ->
+    OrbitPermissions.userCan(permission, package_name)
 
 _.extend OrbitPermissions,
   getPermissionsDescriptions: () ->
