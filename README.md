@@ -40,12 +40,12 @@ that are defined in the database level.
 Once you've installed orbit:permissions on your app you'll probably want to give to
 at least one of your users the permission to use it. You can do this in few ways:
 
-You can do this by calling one of the following codes in the **server side**:
+By making the user an Admin:
 
-	// Make the user an Admin. The admin role has all permissions in the system
+	// The admin role has all permissions in the system
 	OrbitPermissions.addAdmins(user_id);
 
-Or:
+Or by giving the user the permissions-manager role:
 
 	// Allow all permissions related operations by this user
 	OrbitPermissions.delegate(user_id, "permissions:permissions-manager");
@@ -58,12 +58,13 @@ Or:
 
 **OrbitPermissions.Registrar(package="project") [anywhere]**
 
-A new package permissions/roles registrar for the given *package* or for the
-project if no package is given.
+Generates a registrar for roles and permissions for the given *package* or for
+the project if called with no package:
 
 Example:
 
-	permissions_registrar = new OrbitPermissions.Registrar(package);
+  // A permissions registrar for the chat package
+	permissions_registrar = new OrbitPermissions.Registrar("chat");
 
 **permissions_registrar.definePermission(permission\_symbol, description) [anywhere]**
 
@@ -88,11 +89,24 @@ Register a permission.
 If description is undefined we generate a default one with an English description
 that is derived from the permission symbol.
 
+Returns the registrar object to allow chaining.
+
+Example:
+
+```coffeescript
+permissions_registrar = new OrbitPermissions.Registrar("chat");
+
+permissions_registrar
+  .definePermission("remove-message")
+  .definePermission("edit-message")
+  .definePermission("appoint-manager");
+```
+
 **permissions\_registrar.defineRole(role\_name, permissions, description) [anywhere]**
 
 Register a *package role*.
 
-Fails if role-name already exist in that package.
+Fails if role\_name is already defined.
 
 **roles should be declared in a code common to the client and server.**
 
@@ -107,6 +121,8 @@ You can omit the package if it's a permission that has been introduced by this
 package. If an unknown role is listed, it just won’t have any effect.
 
 *description* structure: see *permissions_registrar.definePermission*.
+
+Returns the registrar object to allow chaining.
 
 ### Custom Roles
 
@@ -142,11 +158,16 @@ Undefine a custom role.
 Delegate *roles* to *users*.
 
 Each role in the roles list should be prefixed as following:
-* Package roles should be prefixed with the “package:” example: “chat:super-moderator”. 
-* Package roles that were defined in the project code should be prefixed with “project:”.
-* Custom roles should be prefixed with “project-custom:”.
+
+* Package roles should be prefixed with the "package:" example: "chat:super-moderator". 
+* Package roles that were defined in the project code should be prefixed with "project:".
+* Custom roles should be prefixed with "project-custom:".
 
 **Required permissions on the client: orbit-permissions:delegate-and-revoke.**
+
+*users:* Can be a user object, user_id or a list of user objects and user_ids.
+
+*roles:* a role or a list of roles to revoke.
 
 *callback:* Optional. If present, called with an error object as its argument.
 
@@ -154,9 +175,13 @@ Each role in the roles list should be prefixed as following:
 
 Revoke *roles* from *users*.
 
-Roles structure should be like OrbitPermissions.delegate.
+Roles structure should be as defined in OrbitPermissions.delegate() above.
 
 **Required permissions on the client: orbit-permissions:delegate-and-revoke.**
+
+*users:* Can be a user object, user_id or a list of user objects and user_ids.
+
+*roles:* a role or a list of roles to revoke.
 
 *callback:* Optional. If present, called with an error object as its argument.
 
@@ -180,9 +205,9 @@ Equivalent to:
 
 ## Checking Permissions
 
-**OrbitPermissions.userCan(permission, permission\_package, user\_id) [anywhere]**
+**OrbitPermissions.userCan(permission, permission\_package, user) [anywhere]**
 
-*user_id* always required on the server. On the client default to current user.
+*user* is always required on the server. On the client defaults to current user.
 
 **Required permissions on the client: orbit-permissions:get-users-roles. if querying other users permissions.**
 
@@ -190,7 +215,7 @@ Returns true if user has the permission.
 
 **OrbitPermissions.throwIfUserCant(permission, permission\_package, [user\_id]) [anywhere]**
 
-*user_id* always required on the server. On the client default to current user.
+*user* is always required on the server. On the client defaults to current user.
 
 Throws Meteor.Error(401, "Insufficient permissions") if user don't have the permission.
 
