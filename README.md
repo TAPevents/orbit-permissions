@@ -9,7 +9,24 @@ restrictions. These permissions are gathered into *roles*. The orbit:permissions
 two types of roles: *package roles* that are defined in the code level, and *custom roles*
 that are defined in the database level.
 
-## Changes to Default Meteor Behavior:
+**Table of Contents**
+
+- [orbit:permissions](#)
+	- [Changes to Default Meteor Behavior](#)
+	- [Permissions and Roles Defined by orbit:permissions](#)
+		- [Permissions](#)
+		- [Package Roles and their permissions](#)
+	- [Getting Started](#)
+	- [API](#)
+		- [The Permissions & Package Roles Registrar](#)
+		- [Custom Roles](#)
+		- [Delegate/Revoke Roles](#)
+		- [Checking Permissions](#)
+		- [Get Info](#)
+		- [Templates Helper](#)
+	- [Testing](#)
+
+## Changes to Default Meteor Behavior
 
 1. User entries in the Meteor.users collection gain a new field named
    orbit\_roles corresponding to the user's roles.
