@@ -230,7 +230,7 @@ Example:
 OrbitPermissions.undefineCustomRole("underprivileged-moderator");
 ```
 
-## Delegate/Revoke Roles
+### Delegate/Revoke Roles
 
 In orbit:permissions permissions are granted to users indirectly by delegating roles.
 
@@ -318,7 +318,7 @@ Equivalent to:
 OrbitPermissions.revoke(users, "permissions:admin", callback)
 ```
 
-## Checking Permissions
+### Checking Permissions
 
 **OrbitPermissions.userCan(permission, permission\_package, user) [anywhere]**
 
@@ -334,7 +334,7 @@ Returns true if user has *permission* that was defined by the *permission\_packa
 
 Throws Meteor.Error(401, "Insufficient permissions") if user don't have the permission.
 
-## Get Info
+### Get Info
 
 **OrbitPermissions.getRoles() [anywhere]**
 
@@ -344,7 +344,7 @@ Returns an object with info about all the defined roles.
 
 Returns an object with info about all the defined permissions.
 
-## Helper
+### Templates Helper
 
 orbit:permissions introduces the "can" helper, that works as follow:
 
