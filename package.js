@@ -1,7 +1,7 @@
 Package.describe({
   name: "orbit:permissions",
   summary: "Package and project permissions and roles managment",
-  version: "0.0.1",
+  version: "0.1.0",
   git: "https://github.com/TAPevents/orbit-permissions"
 });
 
