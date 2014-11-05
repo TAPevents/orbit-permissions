@@ -1,3 +1,7 @@
+2014.11.05, Version 0.1.1
+
+* set version for tap:i18n in package.js
+
 2014.11.05, Version 0.1.0
 
 * orbit:permission first publish Meteor Package Manager
