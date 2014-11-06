@@ -194,7 +194,7 @@ appplication_registrar
 *Custom roles* are saved in the client and are not permanent in the code level like the *package roles*.
 
 In order to add or remove custom roles in the client level, the user has to have the
-`orbit-permissions:edit-custom-roles` permission.
+`permissions:edit-custom-roles` permission.
 
 Note that there is no such thing as "custom permissions", permissions are defined by code developers
 and are defined in the code level only.
@@ -208,7 +208,7 @@ Set a *custom role*.
 
 Returns the OrbitPermissions object.
 
-**Required permissions on the client: orbit-permissions:edit-custom-roles.**
+**Required permissions on the client: permissions:edit-custom-roles.**
 
 Custom roles are saved to the orbit_custom_roles collection with their role-name as _id.
 
@@ -236,7 +236,7 @@ Undefine a custom role.
 
 Returns the OrbitPermissions object.
 
-**Required permissions on the client: orbit-permissions:edit-custom-roles.**
+**Required permissions on the client: permissions:edit-custom-roles.**
 
 *callback:* Optional. If present, called with an error object as its argument.
 
@@ -252,7 +252,7 @@ OrbitPermissions.undefineCustomRole("underprivileged-moderator");
 In orbit:permissions permissions are granted to users indirectly by delegating roles.
 
 In order to add or remove custom roles in the client level, the user has to have the
-`orbit-permissions:delegate-and-revoke` permission.
+`permissions:delegate-and-revoke` permission.
 
 **OrbitPermissions.delegate(users, roles, [callback]) [anywhere]**
 
@@ -264,7 +264,7 @@ Each role in the roles list should be prefixed as follow:
 * Application roles that were defined in the project code should be prefixed with "project:".
 * *Custom roles* should be prefixed with "project-custom:".
 
-**Required permissions on the client: orbit-permissions:delegate-and-revoke.**
+**Required permissions on the client: permissions:delegate-and-revoke.**
 
 *users:* Can be a user object, user_id or a list of user objects and user_ids.
 
@@ -288,7 +288,7 @@ Revoke *roles* from *users*.
 
 Roles structure should be as defined in OrbitPermissions.delegate() above.
 
-**Required permissions on the client: orbit-permissions:delegate-and-revoke.**
+**Required permissions on the client: permissions:delegate-and-revoke.**
 
 *users:* Can be a user object, user_id or a list of user objects and user_ids.
 
@@ -341,7 +341,7 @@ OrbitPermissions.revoke(users, "permissions:admin", callback)
 
 *user* is always required on the server. On the client defaults to current user.
 
-**Required permissions on the client: orbit-permissions:get-users-roles. if querying other users permissions.**
+**On the client, if querying other users permissions, requires the permissions:get-users-roles permission.**
 
 Returns true if user has *permission* that was defined by the *permission\_package* package.
 
