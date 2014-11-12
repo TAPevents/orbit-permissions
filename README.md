@@ -9,6 +9,8 @@ restrictions. These permissions are gathered into *roles*. The orbit:permissions
 two types of roles: *package roles* that are defined in the code level, and *custom roles*
 that are defined in the database level.
 
+Developed by <a href="http://www.meteorspark.com"><img src="http://www.meteorspark.com/logo/logo-github.png" title="MeteorSpark" alt="MeteorSpark"></a> [Professional Meteor Services](http://www.meteorspark.com) for <a href="http://tapevents.com/"><img src="http://www.meteorspark.com/logo/customers/tapevents.png" title="TAPevents" alt="TAPevents"></a> [World's Best Event Technology](http://tapevents.com/).
+
 **Table of Contents**
 
 - [orbit:permissions](#)
