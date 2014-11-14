@@ -13,20 +13,20 @@ Developed by <a href="http://www.meteorspark.com"><img src="http://www.meteorspa
 
 **Table of Contents**
 
-- [orbit:permissions](#)
-	- [Changes to Default Meteor Behavior](#)
-	- [Permissions and Roles Defined by orbit:permissions](#)
-		- [Permissions](#)
-		- [Package Roles and their permissions](#)
-	- [Getting Started](#)
-	- [API](#)
-		- [The Permissions & Package Roles Registrar](#)
-		- [Custom Roles](#)
-		- [Delegate/Revoke Roles](#)
-		- [Checking Permissions](#)
-		- [Get Info](#)
-		- [Templates Helper](#)
-	- [Testing](#)
+- [orbit:permissions](#orbitpermissions)
+  - [Changes to Default Meteor Behavior](#changes-to-default-meteor-behavior)
+  - [Permissions and Roles Defined by orbit:permissions](#permissions-and-roles-defined-by-orbitpermissions)
+    - [Permissions](#permissions)
+    - [Package Roles and their permissions](#package-roles-and-their-permissions)
+  - [Getting Started](#getting-started)
+  - [API](#api)
+    - [The Permissions & Package Roles Registrar](#the-permissions-&-package-roles-registrar)
+    - [Custom Roles](#custom-roles)
+    - [Delegate/Revoke Roles](#delegaterevoke-roles)
+    - [Checking Permissions](#checking-permissions)
+    - [Get Info](#get-info)
+    - [Templates Helper](#templates-helper)
+  - [Testing](#testing)
 
 ## Changes to Default Meteor Behavior
 
