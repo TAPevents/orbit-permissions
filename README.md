@@ -347,6 +347,21 @@ OrbitPermissions.revoke(users, "permissions:admin", callback)
 
 Returns true if user has *permission* that was defined by the *permission\_package* package.
 
+Example, using userCan to determine whether user is allowed to add *custom roles*:
+
+```javascript
+CustomRoles.allow({
+  insert: function (userId, doc) {
+    return OrbitPermissions.userCan("edit-custom-roles",
+                                      "permissions", userId);
+  },
+  remove: function (userId, doc) {
+    return OrbitPermissions.userCan("edit-custom-roles",
+                                      "permissions", userId);
+  )
+});
+```
+
 **OrbitPermissions.throwIfUserCant(permission, permission\_package, user) [anywhere]**
 
 *user* is always required on the server. On the client defaults to current user.
