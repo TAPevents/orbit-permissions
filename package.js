@@ -20,6 +20,8 @@ Package.onUse(function(api) {
 
   api.use('tap:i18n@1.0.7', both, {weak: true});
 
+  api.addFiles('lib/async.js', client);
+  
   api.addFiles('lib/globals.js', both);
   api.addFiles('lib/permissions-helpers.coffee', both);
   api.addFiles('lib/permissions-common.coffee', both);
